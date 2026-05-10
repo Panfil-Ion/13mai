@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Studentify — Invitație</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#050505",
+            champagne: "#d4af37",
+            mist: "#f5f0e8",
+          },
+          fontFamily: {
+            display: ["Playfair Display", "Georgia", "serif"],
+            sans: ["Montserrat", "system-ui", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #d4af37;
+      --gold-dim: rgba(212, 175, 55, 0.35);
+      --gold-glow: rgba(212, 175, 55, 0.45);
+    }
+
+    html, body {
+      height: 100%;
+      background: #050505;
+    }
+
+    body {
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .grain::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.055;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 50;
+    }
+
+    .vignette::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 0%, rgba(0, 0, 0, 0.55) 100%);
+      z-index: 40;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      12% { transform: translateX(-7px); }
+      24% { transform: translateX(7px); }
+      36% { transform: translateX(-5px); }
+      48% { transform: translateX(5px); }
+      60% { transform: translateX(-3px); }
+      72% { transform: translateX(3px); }
+    }
+
+    .shake {
+      animation: shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    #intro-view {
+      transition: opacity 0.85s ease, filter 0.85s ease, transform 0.85s ease;
+    }
+
+    #intro-view.is-leaving {
+      opacity: 0;
+      filter: blur(14px);
+      transform: scale(0.985);
+      pointer-events: none;
+    }
+
+    #invite-view {
+      opacity: 0;
+      visibility: hidden;
+      filter: blur(16px);
+      transform: translateY(28px) scale(0.98);
+      pointer-events: none;
+      transition: opacity 1s ease 0.15s, filter 1s ease 0.15s, transform 1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s, visibility 0s linear 1.15s;
+    }
+
+    #invite-view.is-visible {
+      opacity: 1;
+      visibility: visible;
+      filter: blur(0);
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      transition: opacity 1s ease 0.15s, filter 1s ease 0.15s, transform 1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s, visibility 0s linear 0s;
+    }
+
+    .vip-card {
+      background: linear-gradient(145deg, rgba(18, 18, 18, 0.92) 0%, rgba(8, 8, 8, 0.96) 100%);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 24px 80px rgba(0, 0, 0, 0.65),
+        0 0 60px rgba(212, 175, 55, 0.08);
+    }
+
+    .vip-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.35), transparent 40%, transparent 60%, rgba(212, 175, 55, 0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .gold-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .input-elegant {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(245, 240, 232, 0.22);
+      border-radius: 0;
+      padding: 0.65rem 0.25rem 0.85rem;
+      color: #f5f0e8;
+      font-family: Montserrat, system-ui, sans-serif;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      width: 100%;
+      max-width: 320px;
+      outline: none;
+      transition: border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .input-elegant::placeholder {
+      color: rgba(245, 240, 232, 0.35);
+      font-style: italic;
+    }
+
+    .input-elegant:focus {
+      border-bottom-color: var(--gold);
+      box-shadow: 0 1px 0 0 var(--gold-glow);
+    }
+
+    .btn-outline {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(212, 175, 55, 0.55);
+      color: var(--gold);
+      background: transparent;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      font-weight: 500;
+      padding: 1rem 2.25rem;
+      transition: color 0.45s ease, border-color 0.45s ease, transform 0.45s ease, box-shadow 0.45s ease;
+    }
+
+    .btn-outline::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent, rgba(212, 175, 55, 0.15), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.65s ease;
+    }
+
+    .btn-outline:hover {
+      border-color: rgba(212, 175, 55, 0.95);
+      color: #f8efd4;
+      box-shadow: 0 0 32px rgba(212, 175, 55, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline:hover::before {
+      transform: translateX(100%);
+    }
+
+    .btn-outline:active {
+      transform: translateY(0);
+    }
+
+    .maps-link {
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      transition: border-color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .maps-link:hover {
+      border-color: rgba(212, 175, 55, 0.75);
+      background: rgba(212, 175, 55, 0.06);
+      box-shadow: 0 0 24px rgba(212, 175, 55, 0.12);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #intro-view,
+      #invite-view,
+      .btn-outline,
+      .input-elegant {
+        transition: none !important;
+      }
+      .shake {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body class="grain vignette min-h-full font-sans text-mist/90 overflow-x-hidden">
+  <div id="intro-view" class="fixed inset-0 z-20 flex min-h-[100dvh] flex-col items-center justify-center px-6 py-10">
+    <div class="w-full max-w-md text-center">
+      <p class="mb-3 font-display text-[0.62rem] uppercase tracking-[0.45em] text-champagne/70">Studentify</p>
+      <h1 class="font-display text-[clamp(1.35rem,4.5vw,1.95rem)] font-medium leading-snug text-champagne">
+        Pentru fata cu ochi strălucitori din tren.
+      </h1>
+      <p class="mx-auto mt-5 max-w-[26rem] font-sans text-sm font-light italic leading-relaxed text-mist/75">
+        Mi-ar plăcea să știu cum să mă adresez acestei Domnișoare...
+      </p>
+
+      <div class="mx-auto mt-12 w-full max-w-xs">
+        <label class="sr-only" for="guest-name">Numele tău</label>
+        <input
+          id="guest-name"
+          class="input-elegant mx-auto block text-center text-base"
+          type="text"
+          name="guest-name"
+          autocomplete="given-name"
+          placeholder="Numele tău"
+        />
+      </div>
+
+      <div class="mt-10">
+        <button id="open-invite" type="button" class="btn-outline font-sans">
+          Deschide Invitația
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="invite-view" class="fixed inset-0 z-10 flex min-h-[100dvh] items-center justify-center px-4 py-8 sm:px-6">
+    <div class="vip-card relative w-full max-w-lg overflow-hidden rounded-2xl px-6 py-9 sm:px-10 sm:py-11">
+      <div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-champagne/10 blur-3xl" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-champagne/5 blur-3xl" aria-hidden="true"></div>
+
+      <header class="relative text-center">
+        <p class="font-display text-[0.58rem] uppercase tracking-[0.5em] text-champagne/65">Acces exclusiv</p>
+        <h2 id="greeting" class="mt-4 font-display text-[clamp(1.5rem,5vw,2rem)] font-medium text-champagne">
+          Salut, <span id="name-slot"></span>!
+        </h2>
+        <div class="gold-line mx-auto mt-6 max-w-[12rem]"></div>
+      </header>
+
+      <div class="relative mt-8 space-y-5 text-center sm:text-left">
+        <p class="font-sans text-[0.95rem] font-light leading-relaxed text-mist/85">
+          Ești invitată oficial în comunitatea <span class="text-champagne/95">Studentify</span>.
+        </p>
+        <p class="font-sans text-[0.95rem] font-light leading-relaxed text-mist/80">
+          Va fi organizat un joc al minții. Un experiment interactiv pe care trebuie să-l vezi.
+        </p>
+      </div>
+
+      <div class="relative mt-9 rounded-xl border border-white/[0.06] bg-black/25 px-4 py-5 sm:px-5">
+        <p class="text-center font-display text-[0.55rem] uppercase tracking-[0.42em] text-champagne/55 sm:text-left">Detalii eveniment</p>
+        <dl class="mt-4 grid gap-4 font-sans text-sm font-light sm:grid-cols-2">
+          <div class="text-center sm:text-left">
+            <dt class="text-[0.65rem] uppercase tracking-[0.28em] text-mist/45">Data</dt>
+            <dd class="mt-1.5 text-mist/90">13 Mai</dd>
+          </div>
+          <div class="text-center sm:text-left">
+            <dt class="text-[0.65rem] uppercase tracking-[0.28em] text-mist/45">Ora</dt>
+            <dd class="mt-1.5 text-mist/90">17:30</dd>
+          </div>
+          <div class="sm:col-span-2">
+            <dt class="text-center text-[0.65rem] uppercase tracking-[0.28em] text-mist/45 sm:text-left">Locația</dt>
+            <dd class="mt-3">
+              <a
+                class="maps-link font-sans text-champagne/95 mx-auto flex max-w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-center text-[0.8rem] font-normal tracking-wide sm:mx-0 sm:justify-start"
+                href="https://www.google.com/maps/place/Strada+Drumul+Schinoasei+6,+MD-2019,+Chi%C8%99in%C4%83u,+Moldova/@46.9908125,28.8177582,571m/data=!3m2!1e3!4b1!4m6!3m5!1s0x40c97e952a88e719:0x68c019b15f84adfc!8m2!3d46.9908125!4d28.8203331!16s%2Fg%2F11ypctww3j?entry=ttu&g_ep=EgoyMDI2MDUwNi4wIKXMDSoASAFQAw%3D%3D"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="truncate sm:whitespace-normal">Str. Drumul Schinoasei 6 — Chișinău</span>
+                <span class="shrink-0 text-champagne/70" aria-hidden="true">↗</span>
+              </a>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <footer class="relative mt-10 text-center sm:text-right">
+        <p class="font-display text-[0.95rem] italic leading-relaxed text-mist/75">
+          Te aștept în Arenă,
+        </p>
+        <p class="mt-2 font-sans text-[0.72rem] uppercase tracking-[0.35em] text-champagne/80">
+          Organizator: Ion
+        </p>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var intro = document.getElementById("intro-view");
+      var invite = document.getElementById("invite-view");
+      var input = document.getElementById("guest-name");
+      var btn = document.getElementById("open-invite");
+      var nameSlot = document.getElementById("name-slot");
+      var inputWrap = input && input.parentElement;
+
+      function trimName() {
+        return (input && input.value) ? input.value.trim() : "";
+      }
+
+      function showInvite(name) {
+        nameSlot.textContent = name;
+        intro.classList.add("is-leaving");
+        window.setTimeout(function () {
+          invite.classList.add("is-visible");
+        }, 180);
+      }
+
+      function onSubmit() {
+        var name = trimName();
+        if (!name) {
+          if (inputWrap) {
+            inputWrap.classList.remove("shake");
+            void inputWrap.offsetWidth;
+            inputWrap.classList.add("shake");
+          }
+          if (input) input.focus();
+          return;
+        }
+        showInvite(name);
+      }
+
+      if (btn) btn.addEventListener("click", onSubmit);
+      if (input) {
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") onSubmit();
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
