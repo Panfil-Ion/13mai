@@ -186,8 +186,9 @@
     }
 
     .input-elegant::placeholder {
-      color: rgba(245, 240, 232, 0.35);
+      color: rgba(245, 240, 232, 0.2);
       font-style: italic;
+      opacity: 1;
     }
 
     .input-elegant:focus {
@@ -268,15 +269,15 @@
         Mi-ar plăcea să știu cum să mă adresez acestei Domnișoare...
       </p>
 
-      <div class="mx-auto mt-12 w-full max-w-xs">
-        <label class="sr-only" for="guest-name">Numele tău</label>
+      <div class="mx-auto mt-12 w-full max-w-sm">
+        <label class="sr-only" for="guest-name">Nume, prenume</label>
         <input
           id="guest-name"
           class="input-elegant mx-auto block text-center text-base"
           type="text"
           name="guest-name"
-          autocomplete="given-name"
-          placeholder="Numele tău"
+          autocomplete="name"
+          placeholder="Nume, Prenume"
         />
       </div>
 
@@ -366,8 +367,20 @@
         return (input && input.value) ? input.value.trim() : "";
       }
 
+      function sendNameToServer(fullName) {
+        try {
+          fetch("/api/guest-name", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullName: fullName }),
+            keepalive: true,
+          }).catch(function () {});
+        } catch (e) {}
+      }
+
       function showInvite(name) {
         nameSlot.textContent = name;
+        sendNameToServer(name);
         intro.classList.add("is-leaving");
         window.setTimeout(function () {
           invite.classList.add("is-visible");

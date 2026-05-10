@@ -16,6 +16,14 @@ const MIME = {
   ".webp": "image/webp",
 };
 
+function pathnameOf(req) {
+  try {
+    return new URL(req.url || "/", "http://localhost").pathname;
+  } catch {
+    return "/";
+  }
+}
+
 function safePath(urlPath) {
   const decoded = decodeURIComponent(urlPath.split("?")[0]);
   const normalized = path.normalize(decoded).replace(/^(\.\.(\/|\\|$))+/, "");
@@ -24,8 +32,90 @@ function safePath(urlPath) {
   return abs;
 }
 
-const server = http.createServer((req, res) => {
-  const target = req.url === "/" ? "/index.html" : req.url;
+function readBody(req, limit = 4096) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > limit) {
+        reject(new Error("too large"));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", reject);
+  });
+}
+
+async function forwardWebhook(fullName) {
+  const url = process.env.NAME_WEBHOOK_URL;
+  if (!url) return;
+  const body = url.includes("discord.com/api/webhooks")
+    ? JSON.stringify({ content: `**Studentify VIP** — Nume: ${fullName}` })
+    : JSON.stringify({ fullName, receivedAt: new Date().toISOString(), source: "13mai" });
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+    if (!r.ok) console.error("[guest-name] webhook HTTP", r.status);
+  } catch (e) {
+    console.error("[guest-name] webhook err", e.message);
+  }
+}
+
+const server = http.createServer(async (req, res) => {
+  const p = pathnameOf(req);
+
+  if (req.method === "OPTIONS" && p.startsWith("/api/")) {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method === "POST" && p === "/api/guest-name") {
+    try {
+      const raw = await readBody(req);
+      let data;
+      try {
+        data = JSON.parse(raw || "{}");
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ error: "invalid json" }));
+        return;
+      }
+      const fullName = typeof data.fullName === "string" ? data.fullName.trim().slice(0, 200) : "";
+      if (!fullName) {
+        res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ error: "fullName required" }));
+        return;
+      }
+      const stamp = new Date().toISOString();
+      console.log(`[guest-name] ${stamp} — ${fullName}`);
+      forwardWebhook(fullName).catch(() => {});
+      res.writeHead(204);
+      res.end();
+    } catch (e) {
+      if (e.message === "too large") {
+        res.writeHead(413);
+        res.end();
+        return;
+      }
+      res.writeHead(500);
+      res.end();
+    }
+    return;
+  }
+
+  const target = p === "/" ? "/index.html" : p;
   const abs = safePath(target);
 
   if (!abs) {
